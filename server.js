@@ -7,7 +7,6 @@ const bodyParser = require('body-parser')
 const express = require('express')
 const app = express()
 
-const request = require('request')
 const mongoose = require('mongoose')
 const Book = require("./models/BookModel")
 const Person = require("./models/PersonModel")
@@ -25,13 +24,15 @@ const isbns = [9780156012195, 9780743273565, 9780435905484, 9780140275360, 97807
 
 const url = "https://www.googleapis.com/books/v1/volumes?q=isbn:"
 
-const loadFromAPI = (apiURL) => {
-  request(apiURL, function(error, response, body) {
+const fetchFromAPI = async (apiUrl) => {
+  try {
+    const response = await fetch(apiUrl);
+    const books = await response.json();
 
-    const result = JSON.parse(body)
+    console.log(books);
 
-    if (result.totalItems && !error && response.statusCode == 200) {
-      const resBook = JSON.parse(body).items[0].volumeInfo
+    if (books.totalItems && response.status == 200) {
+      const resBook = books.items[0].volumeInfo;
 
       const book = new Book({
         title: resBook.title,
@@ -39,17 +40,19 @@ const loadFromAPI = (apiURL) => {
         pages: resBook.pageCount,
         genres: resBook.categories || ["Other"],
         rating: resBook.averageRating || 5
-      })
+      });
 
-      //Only save if the book doesn't exist yet
-      Book.findOne({ title: book.title }, function(err, foundBook) {
-        if (!foundBook) {
-          book.save()
-        }
-      })
-    }
-  })
-}
+      const foundBook = await Book.findOne({ title: book.title });
+
+      if (foundBook) {
+        book.save();
+      }
+
+    };
+  } catch (err) {
+    console.log(err);
+  }
+};
 
 isbns.forEach((i) => {
   const apiURL = url + i;
@@ -58,7 +61,7 @@ isbns.forEach((i) => {
   for subsequent runs, re-comment it so that it runs only once!
   that said, there is a fail-safe to avoid duplicates below
   =======================================================*/
-  loadFromAPI(apiURL)
+  fetchFromAPI(apiURL);
 });
 
 
