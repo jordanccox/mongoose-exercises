@@ -29,8 +29,6 @@ const fetchFromAPI = async (apiUrl) => {
     const response = await fetch(apiUrl);
     const books = await response.json();
 
-    console.log(books);
-
     if (books.totalItems && response.status == 200) {
       const resBook = books.items[0].volumeInfo;
 
@@ -44,7 +42,7 @@ const fetchFromAPI = async (apiUrl) => {
 
       const foundBook = await Book.findOne({ title: book.title });
 
-      if (foundBook) {
+      if (!foundBook) {
         book.save();
       }
 
@@ -54,15 +52,15 @@ const fetchFromAPI = async (apiUrl) => {
   }
 };
 
-isbns.forEach((i) => {
-  const apiURL = url + i;
+// isbns.forEach((i) => {
+  // const apiURL = url + i;
   /*=====================================================
   the first time you run your code, uncomment the function below.
   for subsequent runs, re-comment it so that it runs only once!
   that said, there is a fail-safe to avoid duplicates below
   =======================================================*/
-  fetchFromAPI(apiURL);
-});
+  // fetchFromAPI(apiURL);
+// });
 
 
 /*=====================================================
