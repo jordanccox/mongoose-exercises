@@ -145,20 +145,87 @@ and your server is running do the following:
 /*Books
 ----------------------*/
 //1. Find books with fewer than 500 but more than 200 pages
+(async function () {
+  try {
+    const books = await Book.find({ pages: { $gt: 200, $lt: 500 } });
+  } catch (err) {
+    console.log(err);
+  }
+})();
 
 //2. Find books whose rating is less than 5, and sort by the author's name
 
+(async function () {
+  try {
+    const books = await Book.aggregate([{ $match: { rating: { $lt: 5 } } },{ $sort: { author: -1 } }]);
+  } catch (err) {
+    console.log(err);
+  }
+})();
+
 //3. Find all the Fiction books, skip the first 2, and display only 3 of them
 
+(async function () {
+  try {
+    const books = await Book.aggregate([ { $match: { genres: { $in: [ "Fiction", "FICTION" ] }}}, { $skip: 2 }, {$limit: 3}]);
+    //console.log(books);
+  } catch (err) {
+    console.log(err);
+  }
+})();
 
 /*People
 ----------------------*/
 //1. Find all the people who are tall (>180) AND rich (>30000)
 
+(async function () {
+  try {
+    const people = await Person.find({ height: { $gt: 180 }, salary: { $gt: 30000 }});
+    //console.log(people);
+  } catch (err) {
+    console.log(err);
+  }
+})();
+
 //2. Find all the people who are tall (>180) OR rich (>30000)
+
+(async function () {
+  try {
+    const people = await Person.find({ $or: [{ height: { $gt: 180 } }, { salary: { $gt: 30000 } }] });
+    //console.log(people);
+  } catch (err) {
+    console.log(err);
+  }
+})();
 
 //3. Find all the people who have grey hair or eyes, and who's weight (<70)
 
+(async function () {
+  try {
+    const people = await Person.find({ $and: [ { $or: [ { hair: "grey" }, { eyes: "grey"} ] }, { weight: { $lt: 70 } } ]});
+    //console.log(people);
+  } catch (err) {
+    console.log(err);
+  }
+})();
+
 //4. Find people who have at least 1 kid with grey hair
 
+(async function () {
+  try {
+    const people = await Person.find({ numKids: { $gte: 1 }, hair: "grey" });
+    // console.log(people);
+  } catch (err) {
+    console.log(err);
+  }
+})();
+
 //5. Find all the people who have at least one kid who's weight is >100 and themselves' weight is >100
+(async function () {
+  try {
+    const people = await Person.find({ kids: { $all: [ {"$elemMatch": { weight: {$gt: 100}}} ]}, weight: { $gt: 100 }});
+    people.forEach((person) => console.log(person.kids));
+  } catch (err) {
+    console.log(err);
+  }
+})();
